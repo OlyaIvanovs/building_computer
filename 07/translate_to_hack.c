@@ -25,10 +25,11 @@ int main(int argc, char *argv[])
 	char that_num[MAXLINE];
 	char temp_num[MAXLINE];
 	char static_num[MAXLINE];
+	char label_name[MAXLINE];
 	int dif_label[3] = {0};
 
 	// from_file = fopen(argv[1], "r");
-	from_file = fopen("StaticTest.vm", "r");
+	from_file = fopen("FibonacciSeries.vm", "r");
 	to_file = fopen("my_asm.asm", "w");
 	if (from_file == 0)
 	{
@@ -319,6 +320,31 @@ int main(int argc, char *argv[])
 					"M=!M\n"
 					"@SP\n"
 					"M=M+1\n");
+			else if (StartsWith(line, "label")) 
+			{
+				sscanf(line, "label %s\n", label_name);
+				printf("(%s)\n", label_name);
+			}
+			else if (StartsWith(line, "if-goto")) 
+			{
+				sscanf(line, "if-goto %s\n", label_name);
+				printf(
+					"@SP\n"
+					"M=M-1\n"
+					"@%s\n"
+					"D;JGT\n", 
+					label_name);
+			} 
+			else if (StartsWith(line, "goto")) 
+			{
+				sscanf(line, "goto %s\n", label_name);
+				printf(
+					"@SP\n"
+					"M=M-1\n"
+					"@%s\n"
+					"0;JMP\n", 
+					label_name);
+			}
 		}
 	}
 	fclose(from_file);
