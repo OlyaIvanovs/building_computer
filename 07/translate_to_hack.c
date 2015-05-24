@@ -25,11 +25,13 @@ int main(int argc, char *argv[])
 	char that_num[MAXLINE];
 	char temp_num[MAXLINE];
 	char static_num[MAXLINE];
+	char local_vars_num[MAXLINE];
 	char label_name[MAXLINE];
+	char func_name[MAXLINE];
 	int dif_label[3] = {0};
 
 	// from_file = fopen(argv[1], "r");
-	from_file = fopen("FibonacciSeries.vm", "r");
+	from_file = fopen("SimpleFunction.vm", "r");
 	to_file = fopen("my_asm.asm", "w");
 	if (from_file == 0)
 	{
@@ -47,9 +49,9 @@ int main(int argc, char *argv[])
 		clean(line);
 
 		if (strlen(line) > 0) {
-			if (StartsWith(line, "pushconstant")) 
+			if (StartsWith(line, "push constant")) 
 			{
-				sscanf(line, "pushconstant%s\n", pushed_const);
+				sscanf(line, "push constant%s\n", pushed_const);
 				printf("@%s\n"
 					"D=A\n"
 					"@SP\n"
@@ -59,29 +61,29 @@ int main(int argc, char *argv[])
 					"M=M+1\n",
 					pushed_const);
 			} 
-			else if (StartsWith(line, "pushlocal")) 
+			else if (StartsWith(line, "push local")) 
 			{
-				sscanf(line, "pushlocal%s\n", local_num);
+				sscanf(line, "push local%s\n", local_num);
 				print_from_segment(local_num, "LCL");
 			}
-			else if (StartsWith(line, "pushargument")) 
+			else if (StartsWith(line, "push argument")) 
 			{
-				sscanf(line, "pushargument%s\n", arg_num);
+				sscanf(line, "push argument%s\n", arg_num);
 				print_from_segment(arg_num, "ARG");
 			}
-			else if (StartsWith(line, "pushthis")) 
+			else if (StartsWith(line, "push this")) 
 			{
-				sscanf(line, "pushthis%s\n", this_num);
+				sscanf(line, "push this%s\n", this_num);
 				print_from_segment(this_num, "THIS");
 			}
-			else if (StartsWith(line, "pushthat")) 
+			else if (StartsWith(line, "push that")) 
 			{
-				sscanf(line, "pushthat%s\n", that_num);
+				sscanf(line, "push that%s\n", that_num);
 				print_from_segment(that_num, "THAT");
 			}
-			else if (StartsWith(line, "pushtemp")) 
+			else if (StartsWith(line, "push temp")) 
 			{
-				sscanf(line, "pushtemp%s\n", temp_num);
+				sscanf(line, "push temp%s\n", temp_num);
 				printf("@%s\n"
 					"D=A\n"
 					"@R14\n"
@@ -99,9 +101,9 @@ int main(int argc, char *argv[])
 					"M=M+1\n",
 					temp_num); 
 			}
-			else if (StartsWith(line, "pushstatic")) 
+			else if (StartsWith(line, "push static")) 
 			{
-				sscanf(line, "pushstatic%s\n", static_num);
+				sscanf(line, "push static%s\n", static_num);
 				printf("@%s\n"
 					"D=A\n"
 					"@16\n"
@@ -117,9 +119,9 @@ int main(int argc, char *argv[])
 					"M=M+1\n",
 					static_num); 
 			}
-			else if (StartsWith(line, "pushpointer")) 
+			else if (StartsWith(line, "push pointer")) 
 			{
-				sscanf(line, "pushpointer%s\n", this_num);
+				sscanf(line, "push pointer%s\n", this_num);
 				if (*this_num == '0')
 					printf("@THIS\n"
 					"D=M\n"
@@ -137,29 +139,29 @@ int main(int argc, char *argv[])
 					"@SP\n"
 					"M=M+1\n");  
 			} 
-			else if (StartsWith(line, "poplocal")) 
+			else if (StartsWith(line, "pop local")) 
 			{
-				sscanf(line, "poplocal%s\n", local_num);
+				sscanf(line, "pop local%s\n", local_num);
 				print_to_segment(local_num, "LCL");
 			}
-			else if (StartsWith(line, "popargument")) 
+			else if (StartsWith(line, "pop argument")) 
 			{
-				sscanf(line, "popargument%s\n", arg_num);
+				sscanf(line, "pop argument%s\n", arg_num);
 				print_to_segment(arg_num, "ARG");
 			} 
-			else if (StartsWith(line, "popthis")) 
+			else if (StartsWith(line, "pop this")) 
 			{
-				sscanf(line, "popthis%s\n", this_num);
+				sscanf(line, "pop this%s\n", this_num);
 				print_to_segment(this_num, "THIS");
 			} 
-			else if (StartsWith(line, "popthat")) 
+			else if (StartsWith(line, "pop that")) 
 			{
-				sscanf(line, "popthat%s\n", that_num);
+				sscanf(line, "pop that%s\n", that_num);
 				print_to_segment(that_num, "THAT");
 			} 
-			else if (StartsWith(line, "poptemp")) 
+			else if (StartsWith(line, "pop temp")) 
 			{
-				sscanf(line, "poptemp%s\n", temp_num);
+				sscanf(line, "pop temp%s\n", temp_num);
 				printf("@%s\n"
 					"D=A\n"
 					"@R14\n"
@@ -176,9 +178,9 @@ int main(int argc, char *argv[])
 					"M=D\n",
 					temp_num); 
 			}
-			else if (StartsWith(line, "poppointer")) 
+			else if (StartsWith(line, "pop pointer")) 
 			{
-				sscanf(line, "poppointer%s\n", this_num);
+				sscanf(line, "pop pointer%s\n", this_num);
 				if (*this_num == '0')
 					printf("@SP\n"
 					"AM=M-1\n"
@@ -194,7 +196,7 @@ int main(int argc, char *argv[])
 			} 
 			else if (StartsWith(line, "popstatic"))
 			{
-				sscanf(line, "popstatic%s\n", static_num);
+				sscanf(line, "pop static%s\n", static_num);
 				printf("@%s\n"
 					"D=A\n"
 					"@16\n"
@@ -313,13 +315,14 @@ int main(int argc, char *argv[])
 					"@SP\n"
 					"A=M-1\n"
 					"M=M|D\n");
-			else if (strncmp(line, "not", strlen(line)) == 0)
+			else if (strncmp(line, "not", strlen(line)) == 0) {
 				printf("@SP\n"
 					"AM=M-1\n"
 					"D=M\n"
 					"M=!M\n"
 					"@SP\n"
 					"M=M+1\n");
+			}
 			else if (StartsWith(line, "label")) 
 			{
 				sscanf(line, "label %s\n", label_name);
@@ -345,6 +348,99 @@ int main(int argc, char *argv[])
 					"0;JMP\n", 
 					label_name);
 			}
+			else if (StartsWith(line, "function")) 
+			{
+				sscanf(line, "function %[a-zA-Z0-9:_.] %s\n", func_name, local_vars_num);
+				printf(
+					"@%s\n"
+					"D=A\n"
+					"@SP\n"
+					"M=M+D\n", 
+					local_vars_num);
+			}
+			else if (strncmp(line, "return", strlen(line)) == 0) 
+			{
+				printf(
+					"@LCL\n"
+					"D=M\n"
+					"@R13\n"
+					"M=D\n"
+
+					"@LCL\n"
+					"D=M\n"
+					"@R14\n"
+					"M=D\n"
+					"@5\n"
+					"D=A\n"
+					"@R14\n"
+					"M=M-D\n"
+					"A=M\n"
+					"D=M\n"
+					"@R14\n"
+					"M=D\n"
+
+					"@SP\n"
+					"A=M-1\n"
+					"D=M\n"
+					"@ARG\n"
+					"A=M\n"
+					"M=D\n"
+					"D=A\n"
+					"@SP\n"
+					"M=D+1\n"
+
+					"@R13\n"
+					"D=M\n"
+					"@R15\n"
+					"M=D\n"
+					"@4\n"
+					"D=A\n"
+					"@R15\n"
+					"M=M-D\n"
+					"A=M\n"
+					"D=M\n"
+					"@LCL\n"
+					"M=D\n"
+
+					"@R13\n"
+					"D=M\n"
+					"@R15\n"
+					"M=D\n"
+					"@2\n"
+					"D=A\n"
+					"@R15\n"
+					"M=M-D\n"
+					"A=M\n"
+					"D=M\n"
+					"@THIS\n"
+					"M=D\n"
+
+					"@R13\n"
+					"D=M\n"
+					"@R15\n"
+					"M=D\n"
+					"@1\n"
+					"D=A\n"
+					"@R15\n"
+					"M=M-D\n"
+					"A=M\n"
+					"D=M\n"
+					"@THAT\n"
+					"M=D\n"
+
+					"@R13\n"
+					"D=M\n"
+					"@R15\n"
+					"M=D\n"
+					"@3\n"
+					"D=A\n"
+					"@R15\n"
+					"M=M-D\n"
+					"A=M\n"
+					"D=M\n"
+					"@ARG\n"
+					"M=D\n");
+			}
 		}
 	}
 	fclose(from_file);
@@ -354,6 +450,7 @@ int main(int argc, char *argv[])
 void clean(char *line)
 {
 	char *cursor = line;
+	// char *d = line;
 	while (*cursor != 0)
 	{
 		if (!isspace(*cursor))
@@ -364,16 +461,15 @@ void clean(char *line)
 				break;
 			} 
 			*line = *cursor;
-			line++;
 		}
+		line++;
 		cursor++;
 	}
 	line--;
-	while (isspace(*line)) 
-	{
+	while (isspace(*line))
 		line--;
-	}
 	*(line+1) = 0;
+	// printf("%s\n", d);
 }
 
 
