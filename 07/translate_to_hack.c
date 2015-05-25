@@ -26,12 +26,16 @@ int main(int argc, char *argv[])
 	char temp_num[MAXLINE];
 	char static_num[MAXLINE];
 	char local_vars_num[MAXLINE];
+	char args_num[MAXLINE];
 	char label_name[MAXLINE];
 	char func_name[MAXLINE];
 	int dif_label[3] = {0};
+	int line_num = 1;
+	int func_return = 0;
+	int func_return_back = 0;
 
 	// from_file = fopen(argv[1], "r");
-	from_file = fopen("SimpleFunction.vm", "r");
+	from_file = fopen("Sys.vm", "r");
 	to_file = fopen("my_asm.asm", "w");
 	if (from_file == 0)
 	{
@@ -46,7 +50,7 @@ int main(int argc, char *argv[])
 
 	while (fgets(line, MAXLINE, from_file) != NULL) 
 	{
-		clean(line);
+		clean(line); 
 
 		if (strlen(line) > 0) {
 			if (StartsWith(line, "push constant")) 
@@ -326,14 +330,16 @@ int main(int argc, char *argv[])
 			else if (StartsWith(line, "label")) 
 			{
 				sscanf(line, "label %s\n", label_name);
-				printf("(%s)\n", label_name);
+				printf(
+					// "@SP\n"
+					// "M=M-1\n"
+					"(%s)\n", 
+					label_name);
 			}
 			else if (StartsWith(line, "if-goto")) 
 			{
 				sscanf(line, "if-goto %s\n", label_name);
 				printf(
-					"@SP\n"
-					"M=M-1\n"
 					"@%s\n"
 					"D;JGT\n", 
 					label_name);
@@ -342,8 +348,6 @@ int main(int argc, char *argv[])
 			{
 				sscanf(line, "goto %s\n", label_name);
 				printf(
-					"@SP\n"
-					"M=M-1\n"
 					"@%s\n"
 					"0;JMP\n", 
 					label_name);
@@ -352,11 +356,73 @@ int main(int argc, char *argv[])
 			{
 				sscanf(line, "function %[a-zA-Z0-9:_.] %s\n", func_name, local_vars_num);
 				printf(
+					"(%s)\n"
 					"@%s\n"
 					"D=A\n"
 					"@SP\n"
 					"M=M+D\n", 
-					local_vars_num);
+					func_name, local_vars_num);
+			}
+			else if (StartsWith(line, "call")) 
+			{
+				sscanf(line, "call %[a-zA-Z0-9:_.] %s\n", func_name, args_num);
+				printf(
+					"@%d\n"
+					"D=A\n"
+					"@SP\n"
+					"A=M\n"
+					"M=D\n"
+					"@SP\n"
+					"M=M+1\n"
+					"@LCL\n"
+					"D=M\n"
+					"@SP\n"
+					"A=M\n"
+					"M=D\n"
+					"@SP\n"
+					"M=M+1\n"
+					"@ARG\n"
+					"D=M\n"
+					"@SP\n"
+					"A=M\n"
+					"M=D\n"
+					"@SP\n"
+					"M=M+1\n"
+					"@THIS\n"
+					"D=M\n"
+					"@SP\n"
+					"A=M\n"
+					"M=D\n"
+					"@SP\n"
+					"M=M+1\n"
+					"@THAT\n"
+					"D=M\n"
+					"@SP\n"
+					"A=M\n"
+					"M=D\n"
+					"@SP\n"
+					"M=M+1\n"
+
+					"@%s\n"
+					"D=A\n"
+					"@ARG\n"
+					"M=D\n"
+					"@5\n"
+					"D=A\n"
+					"@ARG\n"
+					"M=M+D\n"
+					"@SP\n"
+					"D=M\n"
+					"@ARG\n"
+					"M=D-M\n"
+					"@LCL\n"
+					"M=D\n"
+
+					"@%s\n"
+					"0;JMP\n"
+					"(return_%d)\n", 
+					line_num, args_num, func_name, func_return);
+				func_return++;
 			}
 			else if (strncmp(line, "return", strlen(line)) == 0) 
 			{
@@ -439,8 +505,14 @@ int main(int argc, char *argv[])
 					"A=M\n"
 					"D=M\n"
 					"@ARG\n"
-					"M=D\n");
+					"M=D\n"
+
+					"@return_%d\n"
+					"0;JMP\n",
+					func_return_back);
+				func_return_back++;
 			}
+			line_num++;
 		}
 	}
 	fclose(from_file);
